@@ -7,7 +7,7 @@ import {
   FolderOpen,
   Plus,
   FileText,
-  BarChart3,
+  MessageSquare,
   CheckSquare,
   Database,
   Users,
@@ -28,7 +28,7 @@ export function Sidebar({ className }: SidebarProps) {
     { to: "/projects", icon: FolderOpen, label: t("nav.myProjects") },
     { to: "/projects/new", icon: Plus, label: t("nav.newProject") },
     { to: "/applications", icon: FileText, label: t("nav.applications") },
-    { to: "/analytics", icon: BarChart3, label: t("nav.analytics") },
+    { to: "/messages", icon: MessageSquare, label: t("nav.messages") },
   ];
 
   const adminLinks = [

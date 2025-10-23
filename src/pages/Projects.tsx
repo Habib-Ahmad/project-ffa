@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Search, Plus } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -16,6 +16,7 @@ import {
 
 export default function Projects() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState("all");
 
   const projects = [
@@ -132,7 +133,11 @@ export default function Projects() {
                   </div>
 
                   <div className="flex gap-2 mt-4">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => navigate(`/projects/${project.id}`)}
+                    >
                       {t("common.viewDetails")}
                     </Button>
                     {project.status === "draft" && (

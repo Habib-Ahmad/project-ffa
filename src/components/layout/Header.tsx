@@ -1,5 +1,6 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -10,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Globe, LogOut, Menu } from "lucide-react";
+import { Globe, LogOut, Menu, Moon, Sun } from "lucide-react";
 
 interface HeaderProps {
   onMenuToggle?: () => void;
@@ -19,6 +20,7 @@ interface HeaderProps {
 export function Header({ onMenuToggle }: HeaderProps) {
   const { language, setLanguage, t } = useLanguage();
   const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const toggleLanguage = () => {
     setLanguage(language === "en" ? "fr" : "en");
@@ -44,6 +46,18 @@ export function Header({ onMenuToggle }: HeaderProps) {
         </div>
 
         <div className="flex-1" />
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTheme}
+        >
+          {theme === "light" ? (
+            <Moon className="h-5 w-5" />
+          ) : (
+            <Sun className="h-5 w-5" />
+          )}
+        </Button>
 
         <Button
           variant="ghost"

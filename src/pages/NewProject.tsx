@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight, Save } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowLeft, ArrowRight, Save, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -14,14 +15,52 @@ export default function NewProject() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
+  const [documentRequirements, setDocumentRequirements] = useState<
+    Array<{ category: string; type: string; mandatory: boolean }>
+  >([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedType, setSelectedType] = useState("");
+  const [isMandatory, setIsMandatory] = useState(false);
 
   const steps = [
     { key: "basics", label: t("project.basics") },
     { key: "scope", label: t("project.scope") },
     { key: "budget", label: t("project.budget") },
-    { key: "geography", label: t("project.geography") },
+    { key: "documents", label: t("project.documents") },
     { key: "review", label: t("project.review") },
   ];
+
+  const documentCategories = [
+    "Identity Documents",
+    "Financial Documents",
+    "Legal Documents",
+    "Academic Documents",
+    "Professional Documents",
+  ];
+
+  const documentTypes: Record<string, string[]> = {
+    "Identity Documents": ["Passport", "National ID", "Driver's License", "Birth Certificate"],
+    "Financial Documents": ["Bank Statement", "Tax Return", "Proof of Income", "Financial Report"],
+    "Legal Documents": ["Business Registration", "Articles of Incorporation", "Legal Certificate"],
+    "Academic Documents": ["Diploma", "Transcript", "Certificate", "Degree"],
+    "Professional Documents": ["Resume/CV", "Reference Letter", "Portfolio", "Work Certificate"],
+  };
+
+  const addDocumentRequirement = () => {
+    if (selectedCategory && selectedType) {
+      setDocumentRequirements([
+        ...documentRequirements,
+        { category: selectedCategory, type: selectedType, mandatory: isMandatory },
+      ]);
+      setSelectedCategory("");
+      setSelectedType("");
+      setIsMandatory(false);
+    }
+  };
+
+  const removeDocumentRequirement = (index: number) => {
+    setDocumentRequirements(documentRequirements.filter((_, i) => i !== index));
+  };
 
   const progress = ((currentStep + 1) / steps.length) * 100;
 
@@ -143,24 +182,102 @@ export default function NewProject() {
 
           {currentStep === 3 && (
             <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                {t("project.documentRequirements")}
+              </p>
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="country">{t("project.country")}</Label>
-                  <Input id="country" placeholder="Select country" />
+                  <Label htmlFor="docCategory">{t("project.documentCategory")}</Label>
+                  <select
+                    id="docCategory"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={selectedCategory}
+                    onChange={(e) => {
+                      setSelectedCategory(e.target.value);
+                      setSelectedType("");
+                    }}
+                  >
+                    <option value="">Select category</option>
+                    {documentCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="region">{t("project.region")}</Label>
-                  <Input id="region" placeholder="Select region" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="department">{t("project.department")}</Label>
-                  <Input id="department" placeholder="Select department" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="city">{t("project.city")}</Label>
-                  <Input id="city" placeholder="Select city" />
+                  <Label htmlFor="docType">{t("project.documentType")}</Label>
+                  <select
+                    id="docType"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                    disabled={!selectedCategory}
+                  >
+                    <option value="">Select type</option>
+                    {selectedCategory &&
+                      documentTypes[selectedCategory]?.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                  </select>
                 </div>
               </div>
+
+              <div className="flex items-center gap-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="mandatory"
+                    checked={isMandatory}
+                    onCheckedChange={(checked) => setIsMandatory(checked === true)}
+                  />
+                  <Label htmlFor="mandatory" className="cursor-pointer">
+                    {t("project.mandatory")}
+                  </Label>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={addDocumentRequirement}
+                  disabled={!selectedCategory || !selectedType}
+                >
+                  {t("project.addDocument")}
+                </Button>
+              </div>
+
+              {documentRequirements.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Added Requirements:</Label>
+                  <div className="space-y-2">
+                    {documentRequirements.map((req, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 border rounded-md"
+                      >
+                        <div>
+                          <span className="font-medium">{req.type}</span>
+                          <span className="text-sm text-muted-foreground ml-2">
+                            ({req.category})
+                          </span>
+                          {req.mandatory && (
+                            <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                              {t("project.mandatory")}
+                            </span>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeDocumentRequirement(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
