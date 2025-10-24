@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 
 export type UserRole = "intervener" | "admin";
 
@@ -20,18 +20,53 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>({
-    id: "1",
-    name: "Marie Dupont",
-    email: "marie.dupont@example.com",
-    role: "intervener",
-    organizationId: "org-1",
-    organizationName: "French Embassy - Ottawa",
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+
+  const resetInactivityTimer = () => {
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+
+    if (user) {
+      inactivityTimerRef.current = setTimeout(() => {
+        signOut();
+      }, INACTIVITY_TIMEOUT);
+    }
+  };
 
   const signOut = () => {
     setUser(null);
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
   };
+
+  useEffect(() => {
+    if (user) {
+      const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+      
+      const handleActivity = () => {
+        resetInactivityTimer();
+      };
+
+      events.forEach(event => {
+        document.addEventListener(event, handleActivity);
+      });
+
+      resetInactivityTimer();
+
+      return () => {
+        events.forEach(event => {
+          document.removeEventListener(event, handleActivity);
+        });
+        if (inactivityTimerRef.current) {
+          clearTimeout(inactivityTimerRef.current);
+        }
+      };
+    }
+  }, [user]);
 
   return (
     <AuthContext.Provider value={{ user, setUser, signOut }}>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { Send, Paperclip } from "lucide-react";
 export default function Messages() {
   const { t } = useLanguage();
   const [selectedThread, setSelectedThread] = useState<string | null>(null);
+  const [messageText, setMessageText] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Mock data
   const threads = [
@@ -64,6 +66,24 @@ export default function Messages() {
       attachments: [],
     },
   ];
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (selectedThread) {
+      scrollToBottom();
+    }
+  }, [selectedThread, messages]);
+
+  const handleSendMessage = () => {
+    if (messageText.trim()) {
+      // In real app, send message here
+      setMessageText("");
+      setTimeout(scrollToBottom, 100);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -156,6 +176,7 @@ export default function Messages() {
                         </div>
                       </div>
                     ))}
+                    <div ref={messagesEndRef} />
                   </div>
                 </ScrollArea>
 
@@ -163,13 +184,21 @@ export default function Messages() {
                   <Textarea
                     placeholder="Type your message..."
                     rows={3}
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
                   />
                   <div className="flex justify-between items-center">
                     <Button variant="outline" size="sm">
                       <Paperclip className="h-4 w-4 mr-2" />
                       Attach
                     </Button>
-                    <Button size="sm">
+                    <Button size="sm" onClick={handleSendMessage}>
                       <Send className="h-4 w-4 mr-2" />
                       Send
                     </Button>

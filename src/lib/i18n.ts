@@ -26,6 +26,15 @@ export const translations = {
       send: "Send",
       pending: "Pending",
     },
+    auth: {
+      login: "Login",
+      loginDescription: "Enter your credentials to access the FFA Staff Portal",
+      email: "Email",
+      password: "Password",
+      loginSuccess: "Login successful",
+      invalidCredentials: "Invalid credentials",
+      sessionExpired: "Session expired due to inactivity",
+    },
     nav: {
       dashboard: "Dashboard",
       projects: "Projects",
@@ -155,6 +164,15 @@ export const translations = {
       download: "Télécharger",
       send: "Envoyer",
       pending: "En attente",
+    },
+    auth: {
+      login: "Connexion",
+      loginDescription: "Entrez vos identifiants pour accéder au portail du personnel FFA",
+      email: "Courriel",
+      password: "Mot de passe",
+      loginSuccess: "Connexion réussie",
+      invalidCredentials: "Identifiants invalides",
+      sessionExpired: "Session expirée en raison d'inactivité",
     },
     nav: {
       dashboard: "Tableau de bord",

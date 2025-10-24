@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type Status = "draft" | "pending" | "published" | "closed" | "archived" | 
+export type Status = "draft" | "pending" | "published" | "closed" | "archived" | 
               "submitted" | "review" | "shortlisted" | "awarded" | "declined" |
               "under_review" | "award_recommended";
 

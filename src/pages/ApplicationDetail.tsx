@@ -108,7 +108,7 @@ export default function ApplicationDetail() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="profile">{t("application.profile")}</TabsTrigger>
           <TabsTrigger value="documents">{t("application.documents")}</TabsTrigger>
           <TabsTrigger value="timeline">{t("application.timeline")}</TabsTrigger>
