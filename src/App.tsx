@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import NewProject from "./pages/NewProject";
 import ProjectDetails from "./pages/ProjectDetails";
+import ApplicationDetail from "./pages/ApplicationDetail";
 import Messages from "./pages/Messages";
 import AdminApprovals from "./pages/AdminApprovals";
 import NotFound from "./pages/NotFound";
@@ -32,6 +33,7 @@ const App = () => (
                   <Route path="/projects" element={<Projects />} />
                   <Route path="/projects/new" element={<NewProject />} />
                   <Route path="/projects/:id" element={<ProjectDetails />} />
+                  <Route path="/applications/:id" element={<ApplicationDetail />} />
                   <Route path="/applications" element={<Dashboard />} />
                   <Route path="/messages" element={<Messages />} />
                   <Route path="/admin/approvals" element={<AdminApprovals />} />
