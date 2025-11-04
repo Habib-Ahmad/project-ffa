@@ -32,7 +32,6 @@ export default function Login() {
           organizationId: "org-1",
           organizationName: "French Embassy - Ottawa",
         });
-        toast.success(t("auth.loginSuccess") || "Login successful");
         navigate("/");
       } else {
         toast.error(t("auth.invalidCredentials") || "Invalid credentials");

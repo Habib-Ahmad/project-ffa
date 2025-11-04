@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, ArrowRight, Save, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { SuccessModal } from "@/components/ui/success-modal";
 
 export default function NewProject() {
   const { t } = useLanguage();
@@ -21,6 +22,7 @@ export default function NewProject() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [isMandatory, setIsMandatory] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const steps = [
     { key: "basics", label: t("project.basics") },
@@ -69,8 +71,7 @@ export default function NewProject() {
   };
 
   const handleSubmit = () => {
-    toast.success("Project submitted for approval");
-    navigate("/projects");
+    setShowSuccessModal(true);
   };
 
   const handleNext = () => {
@@ -325,6 +326,15 @@ export default function NewProject() {
           </div>
         </CardContent>
       </Card>
+
+      <SuccessModal
+        open={showSuccessModal}
+        onOpenChange={setShowSuccessModal}
+        title={t("project.submitSuccess")}
+        description={t("project.submitSuccessDescription")}
+        onConfirm={() => navigate("/projects")}
+        confirmText={t("common.viewProjects")}
+      />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, FileText, Download, AlertCircle, User, Mail, Phone, MapPin } from "lucide-react";
+import { ArrowLeft, FileText, Download, AlertCircle, User, Mail, Phone, MapPin, CheckCircle, XCircle, MessageCircle } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Dialog,
@@ -18,6 +18,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { toast } from "sonner";
+import { SuccessModal } from "@/components/ui/success-modal";
 
 export default function ApplicationDetail() {
   const { t } = useLanguage();
@@ -25,6 +26,9 @@ export default function ApplicationDetail() {
   const navigate = useNavigate();
   const [replacementReason, setReplacementReason] = useState("");
   const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState({ title: "", description: "" });
 
   // Mock data
   const application = {
@@ -76,9 +80,35 @@ export default function ApplicationDetail() {
       return;
     }
     
-    toast.success(t("application.replacementRequested"));
+    setSuccessMessage({
+      title: t("application.replacementRequestedTitle"),
+      description: t("application.replacementRequestedDesc"),
+    });
+    setShowSuccessModal(true);
     setReplacementReason("");
     setSelectedDocument(null);
+  };
+
+  const handleApprove = () => {
+    setSuccessMessage({
+      title: t("application.approvedTitle"),
+      description: t("application.approvedDesc"),
+    });
+    setShowSuccessModal(true);
+  };
+
+  const handleReject = () => {
+    if (!rejectionReason.trim()) {
+      toast.error(t("application.rejectionReasonRequired"));
+      return;
+    }
+    
+    setSuccessMessage({
+      title: t("application.rejectedTitle"),
+      description: t("application.rejectedDesc"),
+    });
+    setShowSuccessModal(true);
+    setRejectionReason("");
   };
 
   const getStatusColor = (status: string) => {
@@ -107,8 +137,61 @@ export default function ApplicationDetail() {
         <StatusBadge status={application.status} />
       </div>
 
+      {application.status === "under_review" && (
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <p className="text-sm font-medium">{t("application.reviewActions")}</p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="default"
+                  onClick={handleApprove}
+                  className="bg-success hover:bg-success/90"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  {t("application.approve")}
+                </Button>
+                
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="destructive">
+                      <XCircle className="h-4 w-4 mr-2" />
+                      {t("application.reject")}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>{t("application.rejectApplication")}</DialogTitle>
+                      <DialogDescription>
+                        {t("application.rejectApplicationDesc")}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <Textarea
+                        placeholder={t("application.rejectionReason")}
+                        value={rejectionReason}
+                        onChange={(e) => setRejectionReason(e.target.value)}
+                        rows={4}
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setRejectionReason("")}>
+                        {t("common.cancel")}
+                      </Button>
+                      <Button variant="destructive" onClick={handleReject}>
+                        {t("application.reject")}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
           <TabsTrigger value="profile">{t("application.profile")}</TabsTrigger>
           <TabsTrigger value="documents">{t("application.documents")}</TabsTrigger>
           <TabsTrigger value="timeline">{t("application.timeline")}</TabsTrigger>
@@ -219,7 +302,7 @@ export default function ApplicationDetail() {
                       </Badge>
                     </div>
                     
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="flex flex-wrap items-center gap-2 ml-4">
                       <Button variant="outline" size="sm">
                         <Download className="h-4 w-4 mr-2" />
                         {t("common.download")}
@@ -322,6 +405,13 @@ export default function ApplicationDetail() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <SuccessModal
+        open={showSuccessModal}
+        onOpenChange={setShowSuccessModal}
+        title={successMessage.title}
+        description={successMessage.description}
+      />
     </div>
   );
 }
