@@ -16,6 +16,7 @@ import ApplicationDetail from "./pages/ApplicationDetail";
 import Messages from "./pages/Messages";
 import AdminApprovals from "./pages/AdminApprovals";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,19 +31,134 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
-      <Route path="/" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
-      <Route path="/projects" element={<ProtectedRoute><AppLayout><Projects /></AppLayout></ProtectedRoute>} />
-      <Route path="/projects/new" element={<ProtectedRoute><AppLayout><NewProject /></AppLayout></ProtectedRoute>} />
-      <Route path="/projects/:id" element={<ProtectedRoute><AppLayout><ProjectDetails /></AppLayout></ProtectedRoute>} />
-      <Route path="/applications" element={<ProtectedRoute><AppLayout><Applications /></AppLayout></ProtectedRoute>} />
-      <Route path="/applications/:id" element={<ProtectedRoute><AppLayout><ApplicationDetail /></AppLayout></ProtectedRoute>} />
-      <Route path="/messages" element={<ProtectedRoute><AppLayout><Messages /></AppLayout></ProtectedRoute>} />
-      <Route path="/admin/approvals" element={<ProtectedRoute><AppLayout><AdminApprovals /></AppLayout></ProtectedRoute>} />
-      <Route path="/admin/catalogs" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
-      <Route path="/admin/users" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
-      <Route path="/admin/awards" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
-      <Route path="/admin/audit" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+      <Route
+        path="/login"
+        element={user ? <Navigate to="/" replace /> : <Login />}
+      />
+      <Route
+        path="/register"
+        element={user ? <Navigate to="/" replace /> : <Register />}
+      />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Dashboard />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Projects />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/new"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <NewProject />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:id"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ProjectDetails />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/applications"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Applications />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/applications/:id"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ApplicationDetail />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/messages"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Messages />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/approvals"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <AdminApprovals />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/catalogs"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Dashboard />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Dashboard />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/awards"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Dashboard />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/audit"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Dashboard />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
