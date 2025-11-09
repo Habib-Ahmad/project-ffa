@@ -23,17 +23,17 @@ import {
 import { Eye, EyeOff, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { SuccessModal } from "@/components/ui/success-modal";
+import { authApi } from "@/api";
 
-// Mock list of embassies/organizations
 const ORGANIZATIONS = [
   { id: "org-1", name: "French Embassy - Ottawa" },
   { id: "org-2", name: "French Consulate - Toronto" },
   { id: "org-3", name: "French Consulate - Montreal" },
   { id: "org-4", name: "French Consulate - Vancouver" },
-  { id: "org-5", name: "Alliance Française - Toronto" },
-  { id: "org-6", name: "Alliance Française - Montreal" },
-  { id: "org-7", name: "Alliance Française - Vancouver" },
-  { id: "org-8", name: "Institut Français" },
+  { id: "org-5", name: "French Consulate - Quebec City" },
+  { id: "org-6", name: "Alliance Française - Toronto" },
+  { id: "org-7", name: "Alliance Française - Montreal" },
+  { id: "org-8", name: "Alliance Française - Vancouver" },
   { id: "org-9", name: "Other Organization" },
 ];
 
@@ -53,7 +53,6 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Initial form values
   const initialValues: RegisterFormValues = {
     firstName: "",
     lastName: "",
@@ -63,7 +62,6 @@ export default function Register() {
     organization: "",
   };
 
-  // Validation schema using Yup
   const validationSchema = Yup.object({
     firstName: Yup.string()
       .required(t("auth.firstNameRequired") || "First name is required")
@@ -112,24 +110,32 @@ export default function Register() {
       ),
   });
 
-  // Handle form submission
   const handleSubmit = async (
     values: RegisterFormValues,
     { setSubmitting }: FormikHelpers<RegisterFormValues>
   ) => {
-    // Mock registration - in real app, this would call an API
-    setTimeout(() => {
-      const selectedOrg = ORGANIZATIONS.find(
-        (org) => org.id === values.organization
-      );
+    try {
+      await authApi.register({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password,
+        organization: values.organization,
+      });
 
-      // Mock successful registration - account created with pending role
-      setSubmitting(false);
       setShowSuccessModal(true);
-    }, 1000);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : t("auth.registerFailed") ||
+            "Registration failed. Please try again.";
+      toast.error(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  // Password validation rules
   const passwordRules = [
     {
       label: t("auth.passwordLength") || "At least 8 characters",

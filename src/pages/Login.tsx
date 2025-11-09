@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { authApi } from "@/api";
 
 interface LoginFormValues {
   email: string;
@@ -28,13 +29,11 @@ export default function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
-  // Initial form values
   const initialValues: LoginFormValues = {
     email: "",
     password: "",
   };
 
-  // Validation schema using Yup
   const validationSchema = Yup.object({
     email: Yup.string()
       .email(t("auth.emailInvalid") || "Please enter a valid email")
@@ -44,29 +43,32 @@ export default function Login() {
     ),
   });
 
-  // Handle form submission
   const handleSubmit = async (
     values: LoginFormValues,
     { setSubmitting }: FormikHelpers<LoginFormValues>
   ) => {
-    // Mock login - in real app, this would call an API
-    setTimeout(() => {
-      if (values.email && values.password) {
-        // Mock user data
-        setUser({
-          id: "1",
-          name: "Marie Dupont",
-          email: values.email,
-          role: "intervener",
-          organizationId: "org-1",
-          organizationName: "French Embassy - Ottawa",
-        });
-        navigate("/");
-      } else {
-        toast.error(t("auth.invalidCredentials") || "Invalid credentials");
-      }
+    try {
+      const response = await authApi.login({
+        email: values.email,
+        password: values.password,
+      });
+
+      localStorage.setItem("authToken", response.token);
+      localStorage.setItem("refreshToken", response.refreshToken);
+
+      setUser(response.user);
+      navigate("/");
+
+      toast.success(t("auth.loginSuccess") || "Login successful");
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : t("auth.invalidCredentials") || "Invalid credentials";
+      toast.error(errorMessage);
+    } finally {
       setSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
