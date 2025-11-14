@@ -1,8 +1,9 @@
 import axios from "axios";
+import { toast } from "sonner";
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api",
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -29,14 +30,19 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem("authToken");
       window.location.href = "/login";
+      toast.error("Session expired. Please login again.");
     }
 
     if (error.response?.status === 403) {
-      console.error("Access forbidden");
+      toast.error("Access forbidden");
     }
 
     if (error.response?.status === 500) {
-      console.error("Server error occurred");
+      toast.error("Server error occurred");
+    }
+
+    if (error.response?.data?.message) {
+      return Promise.reject(new Error(error.response.data.message));
     }
 
     return Promise.reject(error);

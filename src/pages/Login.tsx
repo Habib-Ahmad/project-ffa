@@ -49,16 +49,26 @@ export default function Login() {
   ) => {
     try {
       const response = await authApi.login({
-        email: values.email,
+        login: values.email,
         password: values.password,
       });
 
-      localStorage.setItem("authToken", response.token);
+      localStorage.setItem("authToken", response.accessToken);
       localStorage.setItem("refreshToken", response.refreshToken);
 
-      setUser(response.user);
-      navigate("/");
+      setUser({
+        id: response.user.id.toString(),
+        email: response.user.email,
+        name: `${response.user.firstName} ${response.user.lastName}`,
+        role:
+          response.user.role.name.toLowerCase() === "admin"
+            ? "admin"
+            : "intervener",
+        organizationId: response.user.organizationId.toString(),
+        organizationName: "",
+      });
 
+      navigate("/");
       toast.success(t("auth.loginSuccess") || "Login successful");
     } catch (error: unknown) {
       const errorMessage =

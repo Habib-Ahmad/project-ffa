@@ -1,155 +1,138 @@
 import apiClient from "./config";
 import { API_URLS } from "./urls";
+import type { Institution } from "@/interfaces";
 
 export interface LoginRequest {
-  email: string;
+  login: string;
   password: string;
 }
 
 export interface LoginResponse {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: "intervener" | "admin";
-    organizationId: string;
-    organizationName: string;
-  };
-  token: string;
+  accessToken: string;
   refreshToken: string;
+  expiresIn: number;
+  user: {
+    id: number;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: {
+      id: number;
+      name: string;
+    };
+    organizationId: number;
+    organizationType: string;
+  };
 }
 
 export interface RegisterRequest {
   firstName: string;
   lastName: string;
   email: string;
+  login: string;
   password: string;
-  organization: string;
+  organizationId: number;
 }
 
 export interface RegisterResponse {
   message: string;
-  userId: string;
-}
-
-export interface ForgotPasswordRequest {
-  email: string;
-}
-
-export interface ResetPasswordRequest {
-  token: string;
-  newPassword: string;
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
 }
 
 export const authApi = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    // const response = await apiClient.post<LoginResponse>(API_URLS.AUTH.LOGIN, credentials);
-    // return response.data;
-
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (credentials.email && credentials.password) {
-          resolve({
-            user: {
-              id: "1",
-              name: "Marie Dupont",
-              email: credentials.email,
-              role: "intervener",
-              organizationId: "org-1",
-              organizationName: "French Embassy - Ottawa",
-            },
-            token: "mock-jwt-token-12345",
-            refreshToken: "mock-refresh-token-67890",
-          });
-        } else {
-          reject(new Error("Invalid credentials"));
-        }
-      }, 1000);
-    });
+    const response = await apiClient.post<{ data: LoginResponse }>(
+      API_URLS.AUTH.LOGIN,
+      credentials
+    );
+    return response.data.data;
   },
 
   register: async (userData: RegisterRequest): Promise<RegisterResponse> => {
-    // const response = await apiClient.post<RegisterResponse>(API_URLS.AUTH.REGISTER, userData);
-    // return response.data;
+    const response = await apiClient.post<RegisterResponse>(
+      API_URLS.AUTH.REGISTER,
+      userData
+    );
+    return response.data;
+  },
 
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (userData.email && userData.password) {
-          resolve({
-            message:
-              "Registration successful. Your account is pending approval.",
-            userId: "new-user-" + Date.now(),
-          });
-        } else {
-          reject(new Error("Invalid registration data"));
-        }
-      }, 1000);
-    });
+  getInstitutions: async (): Promise<Institution[]> => {
+    const response = await apiClient.get<{ data: { content: Institution[] } }>(
+      API_URLS.PUBLIC.INSTITUTIONS
+    );
+    return response.data.data.content;
   },
 
   logout: async (): Promise<{ message: string }> => {
-    // const response = await apiClient.post<{ message: string }>(API_URLS.AUTH.LOGOUT);
-    // return response.data;
-
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        localStorage.removeItem("authToken");
-        resolve({ message: "Logged out successfully" });
-      }, 500);
-    });
+    const response = await apiClient.post<{ message: string }>(
+      API_URLS.AUTH.LOGOUT
+    );
+    localStorage.removeItem("authToken");
+    return response.data;
   },
 
-  refreshToken: async (refreshToken: string): Promise<{ token: string }> => {
-    // const response = await apiClient.post<{ token: string }>(API_URLS.AUTH.REFRESH_TOKEN, { refreshToken });
-    // return response.data;
-
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ token: "new-mock-jwt-token-" + Date.now() });
-      }, 500);
-    });
+  refreshToken: async (): Promise<{ token: string }> => {
+    const response = await apiClient.post<{ token: string }>(
+      API_URLS.AUTH.REFRESH
+    );
+    return response.data;
   },
 
-  forgotPassword: async (
-    data: ForgotPasswordRequest
-  ): Promise<{ message: string }> => {
-    // const response = await apiClient.post<{ message: string }>(API_URLS.AUTH.FORGOT_PASSWORD, data);
-    // return response.data;
-
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          message: "Password reset email sent. Please check your inbox.",
-        });
-      }, 1000);
-    });
+  forgotPassword: async (email: string): Promise<{ message: string }> => {
+    const response = await apiClient.post<{ message: string }>(
+      API_URLS.AUTH.FORGOT_PASSWORD,
+      { email }
+    );
+    return response.data;
   },
 
   resetPassword: async (
-    data: ResetPasswordRequest
+    token: string,
+    newPassword: string
   ): Promise<{ message: string }> => {
-    // const response = await apiClient.post<{ message: string }>(API_URLS.AUTH.RESET_PASSWORD, data);
-    // return response.data;
-
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (data.token && data.newPassword) {
-          resolve({ message: "Password reset successful" });
-        } else {
-          reject(new Error("Invalid reset data"));
-        }
-      }, 1000);
-    });
+    const response = await apiClient.post<{ message: string }>(
+      API_URLS.AUTH.RESET_PASSWORD,
+      { token, newPassword }
+    );
+    return response.data;
   },
 
   verifyEmail: async (token: string): Promise<{ message: string }> => {
-    // const response = await apiClient.post<{ message: string }>(API_URLS.AUTH.VERIFY_EMAIL, { token });
-    // return response.data;
+    const response = await apiClient.post<{ message: string }>(
+      API_URLS.AUTH.VERIFY_EMAIL,
+      { token }
+    );
+    return response.data;
+  },
 
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ message: "Email verified successfully" });
-      }, 1000);
-    });
+  resendVerification: async (email: string): Promise<{ message: string }> => {
+    const response = await apiClient.post<{ message: string }>(
+      API_URLS.AUTH.RESEND_VERIFICATION,
+      { email }
+    );
+    return response.data;
+  },
+
+  changePassword: async (
+    currentPassword: string,
+    newPassword: string
+  ): Promise<{ message: string }> => {
+    const response = await apiClient.post<{ message: string }>(
+      API_URLS.AUTH.CHANGE_PASSWORD,
+      { currentPassword, newPassword }
+    );
+    return response.data;
+  },
+
+  getMe: async (): Promise<LoginResponse["user"]> => {
+    const response = await apiClient.get<LoginResponse["user"]>(
+      API_URLS.AUTH.ME
+    );
+    return response.data;
   },
 };

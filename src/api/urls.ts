@@ -1,13 +1,18 @@
-const BASE_URL = "/api/v1";
-
 export const API_URLS = {
   AUTH: {
-    LOGIN: `${BASE_URL}/auth/login`,
-    REGISTER: `${BASE_URL}/auth/register`,
-    LOGOUT: `${BASE_URL}/auth/logout`,
-    REFRESH_TOKEN: `${BASE_URL}/auth/refresh`,
-    FORGOT_PASSWORD: `${BASE_URL}/auth/forgot-password`,
-    RESET_PASSWORD: `${BASE_URL}/auth/reset-password`,
-    VERIFY_EMAIL: `${BASE_URL}/auth/verify-email`,
+    LOGIN: "/auth/login",
+    REGISTER: "/auth/register",
+    LOGOUT: "/auth/logout",
+    REFRESH: "/auth/refresh",
+    FORGOT_PASSWORD: "/auth/forgot-password",
+    RESET_PASSWORD: "/auth/reset-password",
+    VERIFY_EMAIL: "/auth/verify-email",
+    RESEND_VERIFICATION: "/auth/resend-verification",
+    CHANGE_PASSWORD: "/auth/change-password",
+    ME: "/auth/me",
+  },
+
+  PUBLIC: {
+    INSTITUTIONS: "/public/institutions",
   },
 } as const;

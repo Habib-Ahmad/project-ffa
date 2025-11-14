@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Formik, Form, Field, FormikHelpers, FieldProps } from "formik";
 import * as Yup from "yup";
@@ -24,26 +24,16 @@ import { Eye, EyeOff, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { SuccessModal } from "@/components/ui/success-modal";
 import { authApi } from "@/api";
-
-const ORGANIZATIONS = [
-  { id: "org-1", name: "French Embassy - Ottawa" },
-  { id: "org-2", name: "French Consulate - Toronto" },
-  { id: "org-3", name: "French Consulate - Montreal" },
-  { id: "org-4", name: "French Consulate - Vancouver" },
-  { id: "org-5", name: "French Consulate - Quebec City" },
-  { id: "org-6", name: "Alliance Française - Toronto" },
-  { id: "org-7", name: "Alliance Française - Montreal" },
-  { id: "org-8", name: "Alliance Française - Vancouver" },
-  { id: "org-9", name: "Other Organization" },
-];
+import type { Institution } from "@/interfaces";
 
 interface RegisterFormValues {
   firstName: string;
   lastName: string;
   email: string;
+  login: string;
   password: string;
   confirmPassword: string;
-  organization: string;
+  organizationId: string;
 }
 
 export default function Register() {
@@ -52,14 +42,36 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [institutions, setInstitutions] = useState<Institution[]>([]);
+  const [loadingInstitutions, setLoadingInstitutions] = useState(true);
+
+  useEffect(() => {
+    const fetchInstitutions = async () => {
+      try {
+        const data = await authApi.getInstitutions();
+        // check if data is an array
+        console.log("data", data);
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid institutions data");
+        }
+        setInstitutions(data);
+      } catch (error) {
+        toast.error("Failed to load institutions");
+      } finally {
+        setLoadingInstitutions(false);
+      }
+    };
+    fetchInstitutions();
+  }, []);
 
   const initialValues: RegisterFormValues = {
     firstName: "",
     lastName: "",
     email: "",
+    login: "",
     password: "",
     confirmPassword: "",
-    organization: "",
+    organizationId: "",
   };
 
   const validationSchema = Yup.object({
@@ -72,7 +84,10 @@ export default function Register() {
     email: Yup.string()
       .email(t("auth.emailInvalid") || "Please enter a valid email")
       .required(t("auth.emailRequired") || "Email is required"),
-    organization: Yup.string().required(
+    login: Yup.string()
+      .required(t("auth.loginRequired") || "Login is required")
+      .trim(),
+    organizationId: Yup.string().required(
       t("auth.organizationRequired") || "Please select an organization"
     ),
     password: Yup.string()
@@ -119,8 +134,9 @@ export default function Register() {
         firstName: values.firstName,
         lastName: values.lastName,
         email: values.email,
+        login: values.login,
         password: values.password,
-        organization: values.organization,
+        organizationId: parseInt(values.organizationId, 10),
       });
 
       setShowSuccessModal(true);
@@ -267,41 +283,68 @@ export default function Register() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="organization">
+                    <Label htmlFor="login">
+                      {t("auth.username") || "Username"}
+                    </Label>
+                    <Field
+                      as={Input}
+                      id="login"
+                      name="login"
+                      type="text"
+                      placeholder="username"
+                      className={
+                        touched.login && errors.login
+                          ? "border-destructive"
+                          : ""
+                      }
+                    />
+                    {touched.login && errors.login && (
+                      <p className="text-sm text-destructive">{errors.login}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="organizationId">
                       {t("auth.organization") || "Embassy/Organization"}
                     </Label>
                     <Select
-                      value={values.organization}
+                      value={values.organizationId}
                       onValueChange={(value) =>
-                        setFieldValue("organization", value)
+                        setFieldValue("organizationId", value)
                       }
+                      disabled={loadingInstitutions}
                     >
                       <SelectTrigger
                         className={
-                          touched.organization && errors.organization
+                          touched.organizationId && errors.organizationId
                             ? "border-destructive"
                             : ""
                         }
-                        onBlur={() => setFieldTouched("organization", true)}
+                        onBlur={() => setFieldTouched("organizationId", true)}
                       >
                         <SelectValue
                           placeholder={
-                            t("auth.selectOrganization") ||
-                            "Select an organization"
+                            loadingInstitutions
+                              ? t("common.loading") || "Loading..."
+                              : t("auth.selectOrganization") ||
+                                "Select an organization"
                           }
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        {ORGANIZATIONS.map((org) => (
-                          <SelectItem key={org.id} value={org.id}>
-                            {org.name}
+                        {institutions.map((institution) => (
+                          <SelectItem
+                            key={institution.id}
+                            value={String(institution.id)}
+                          >
+                            {institution.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {touched.organization && errors.organization && (
+                    {touched.organizationId && errors.organizationId && (
                       <p className="text-sm text-destructive">
-                        {errors.organization}
+                        {errors.organizationId}
                       </p>
                     )}
                   </div>
