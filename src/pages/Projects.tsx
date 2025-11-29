@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,51 +13,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { projectsApi } from "@/api";
+import type { Project } from "@/interfaces";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/utils";
 
 export default function Projects() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState("all");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const projects = [
-    {
-      id: 1,
-      title: "Youth Entrepreneurship Program 2024",
-      description: "Supporting young entrepreneurs in francophone communities",
-      status: "pending" as const,
-      statusLabel: t("project.status.pendingApproval"),
-      budget: "$50,000",
-      startDate: "2024-02-01",
-      location: "Ottawa, Ontario, Canada",
-      applicationsCount: 0,
-    },
-    {
-      id: 2,
-      title: "Cultural Exchange Initiative",
-      description: "Promoting cultural exchange between French-speaking regions",
-      status: "published" as const,
-      statusLabel: t("project.status.published"),
-      budget: "$75,000",
-      startDate: "2024-01-15",
-      location: "Montreal, Quebec, Canada",
-      applicationsCount: 24,
-    },
-    {
-      id: 3,
-      title: "Educational Technology Grant",
-      description: "Funding for educational technology in schools",
-      status: "draft" as const,
-      statusLabel: t("project.status.draft"),
-      budget: "$30,000",
-      startDate: "2024-03-01",
-      location: "Toronto, Ontario, Canada",
-      applicationsCount: 0,
-    },
-  ];
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await projectsApi.getAll();
+        setProjects(response.content);
+      } catch (error) {
+        toast.error(getErrorMessage(error));
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const filteredProjects = statusFilter === "all" 
-    ? projects 
-    : projects.filter(p => p.status === statusFilter);
+    fetchProjects();
+  }, []);
+
+  const filteredProjects = projects.filter((project) => {
+    const matchesStatus =
+      statusFilter === "all" || project.status === statusFilter;
+    const matchesSearch =
+      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
 
   return (
     <div className="space-y-6">
@@ -84,6 +75,8 @@ export default function Projects() {
               <Input
                 placeholder={t("common.search")}
                 className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -92,70 +85,104 @@ export default function Projects() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="draft">{t("project.status.draft")}</SelectItem>
-                <SelectItem value="pending">{t("project.status.pendingApproval")}</SelectItem>
-                <SelectItem value="published">{t("project.status.published")}</SelectItem>
-                <SelectItem value="closed">{t("project.status.closed")}</SelectItem>
+                <SelectItem value="DRAFT">
+                  {t("project.status.draft")}
+                </SelectItem>
+                <SelectItem value="PENDING_APPROVAL">
+                  {t("project.status.pendingApproval")}
+                </SelectItem>
+                <SelectItem value="PUBLISHED">
+                  {t("project.status.published")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {filteredProjects.map((project) => (
-              <Card key={project.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold mb-1">{project.title}</h3>
-                      <p className="text-sm text-muted-foreground">{project.description}</p>
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">{t("common.loading")}</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredProjects.map((project) => (
+                <Card
+                  key={project.id}
+                  className="hover:shadow-md transition-shadow"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold mb-1">
+                          {project.name}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {project.description}
+                        </p>
+                      </div>
+                      <StatusBadge status={project.status} />
                     </div>
-                    <StatusBadge status={project.status} label={project.statusLabel} />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">{t("project.totalBudget")}</p>
-                      <p className="font-medium">{project.budget}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">{t("project.startDate")}</p>
-                      <p className="font-medium">{project.startDate}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Location</p>
-                      <p className="font-medium">{project.location}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Applications</p>
-                      <p className="font-medium">{project.applicationsCount}</p>
-                    </div>
-                  </div>
 
-                  <div className="flex gap-2 mt-4">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate(`/projects/${project.id}`)}
-                    >
-                      {t("common.viewDetails")}
-                    </Button>
-                    {project.status === "draft" && (
-                      <Button size="sm" variant="default">
-                        {t("common.edit")}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">
+                          {t("project.totalBudget")}
+                        </p>
+                        <p className="font-medium">
+                          ${project.totalBudget.toLocaleString()}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">
+                          {t("project.startDate")}
+                        </p>
+                        <p className="font-medium">{project.startDate}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Location</p>
+                        <p className="font-medium">
+                          {project.location?.name || "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Applications</p>
+                        <p className="font-medium">
+                          {project.applications?.length || 0}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/projects/${project.id}`)}
+                      >
+                        {t("common.viewDetails")}
                       </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                      {project.status === "DRAFT" && (
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() =>
+                            navigate(`/projects/${project.id}/edit`)
+                          }
+                        >
+                          {t("common.edit")}
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
 
-            {filteredProjects.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">{t("common.noData")}</p>
-              </div>
-            )}
-          </div>
+              {filteredProjects.length === 0 && !loading && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">{t("common.noData")}</p>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

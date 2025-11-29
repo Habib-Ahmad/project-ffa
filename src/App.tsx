@@ -10,6 +10,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import NewProject from "./pages/NewProject";
+import EditProject from "./pages/EditProject";
 import ProjectDetails from "./pages/ProjectDetails";
 import Applications from "./pages/Applications";
 import ApplicationDetail from "./pages/ApplicationDetail";
@@ -65,6 +66,16 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <AppLayout>
               <NewProject />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:id/edit"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <EditProject />
             </AppLayout>
           </ProtectedRoute>
         }

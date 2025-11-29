@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { authApi } from "@/api";
+import { getErrorMessage } from "@/lib/utils";
 
 interface LoginFormValues {
   email: string;
@@ -71,10 +72,7 @@ export default function Login() {
       navigate("/");
       toast.success(t("auth.loginSuccess") || "Login successful");
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : t("auth.invalidCredentials") || "Invalid credentials";
+      const errorMessage = getErrorMessage(error);
       toast.error(errorMessage);
     } finally {
       setSubmitting(false);

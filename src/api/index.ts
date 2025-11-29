@@ -3,3 +3,6 @@ export { API_URLS } from "./urls";
 
 export * from "./auth";
 export { authApi } from "./auth";
+
+export * from "./projects";
+export { projectsApi } from "./projects";

@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { SuccessModal } from "@/components/ui/success-modal";
 import { authApi } from "@/api";
 import type { Institution } from "@/interfaces";
+import { getErrorMessage } from "@/lib/utils";
 
 interface RegisterFormValues {
   firstName: string;
@@ -141,12 +142,7 @@ export default function Register() {
 
       setShowSuccessModal(true);
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : t("auth.registerFailed") ||
-            "Registration failed. Please try again.";
-      toast.error(errorMessage);
+      toast.error(getErrorMessage(error));
     } finally {
       setSubmitting(false);
     }

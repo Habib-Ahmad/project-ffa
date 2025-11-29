@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 
 export type UserRole = "intervener" | "admin";
 
@@ -22,7 +28,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+  const INACTIVITY_TIMEOUT = 500 * 60 * 1000; // 5 minutes
 
   const resetInactivityTimer = () => {
     if (inactivityTimerRef.current) {
@@ -45,20 +51,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (user) {
-      const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
-      
+      const events = ["mousedown", "keydown", "scroll", "touchstart", "click"];
+
       const handleActivity = () => {
         resetInactivityTimer();
       };
 
-      events.forEach(event => {
+      events.forEach((event) => {
         document.addEventListener(event, handleActivity);
       });
 
       resetInactivityTimer();
 
       return () => {
-        events.forEach(event => {
+        events.forEach((event) => {
           document.removeEventListener(event, handleActivity);
         });
         if (inactivityTimerRef.current) {

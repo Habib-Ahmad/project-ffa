@@ -1,9 +1,22 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-export type Status = "draft" | "pending" | "published" | "closed" | "archived" | 
-              "submitted" | "review" | "shortlisted" | "awarded" | "declined" |
-              "under_review" | "award_recommended";
+export type Status =
+  | "draft"
+  | "pending"
+  | "published"
+  | "closed"
+  | "archived"
+  | "submitted"
+  | "review"
+  | "shortlisted"
+  | "awarded"
+  | "declined"
+  | "under_review"
+  | "award_recommended"
+  | "DRAFT"
+  | "PENDING_APPROVAL"
+  | "PUBLISHED";
 
 interface StatusBadgeProps {
   status: Status;
@@ -24,6 +37,9 @@ const statusStyles: Record<Status, string> = {
   awarded: "bg-success/10 text-success border-success/20",
   award_recommended: "bg-success/10 text-success border-success/20",
   declined: "bg-destructive/10 text-destructive border-destructive/20",
+  DRAFT: "bg-muted text-muted-foreground",
+  PENDING_APPROVAL: "bg-warning/10 text-warning border-warning/20",
+  PUBLISHED: "bg-success/10 text-success border-success/20",
 };
 
 const statusLabels: Record<Status, string> = {
@@ -39,17 +55,16 @@ const statusLabels: Record<Status, string> = {
   awarded: "Awarded",
   award_recommended: "Award Recommended",
   declined: "Declined",
+  DRAFT: "Draft",
+  PENDING_APPROVAL: "Pending Approval",
+  PUBLISHED: "Published",
 };
 
 export function StatusBadge({ status, label, className }: StatusBadgeProps) {
   return (
     <Badge
       variant="outline"
-      className={cn(
-        "font-medium border",
-        statusStyles[status],
-        className
-      )}
+      className={cn("font-medium border", statusStyles[status], className)}
     >
       {label || statusLabels[status]}
     </Badge>

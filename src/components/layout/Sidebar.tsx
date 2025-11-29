@@ -25,16 +25,41 @@ export function Sidebar({ className }: SidebarProps) {
 
   const intervenerLinks = [
     { to: "/", icon: LayoutDashboard, label: t("nav.dashboard"), end: true },
-    { to: "/projects", icon: FolderOpen, label: t("nav.myProjects"), end: true },
+    {
+      to: "/projects",
+      icon: FolderOpen,
+      label: t("nav.myProjects"),
+      end: true,
+    },
     { to: "/projects/new", icon: Plus, label: t("nav.newProject"), end: true },
-    { to: "/applications", icon: FileText, label: t("nav.applications"), end: true },
-    { to: "/messages", icon: MessageSquare, label: t("nav.messages"), end: true },
+    {
+      to: "/applications",
+      icon: FileText,
+      label: t("nav.applications"),
+      end: true,
+    },
+    {
+      to: "/messages",
+      icon: MessageSquare,
+      label: t("nav.messages"),
+      end: true,
+    },
   ];
 
   const adminLinks = [
     { to: "/", icon: LayoutDashboard, label: t("nav.dashboard"), end: true },
-    { to: "/admin/approvals", icon: CheckSquare, label: t("nav.approvals"), end: true },
-    { to: "/admin/catalogs", icon: Database, label: t("nav.catalogs"), end: true },
+    {
+      to: "/admin/approvals",
+      icon: CheckSquare,
+      label: t("nav.approvals"),
+      end: true,
+    },
+    {
+      to: "/admin/catalogs",
+      icon: Database,
+      label: t("nav.catalogs"),
+      end: true,
+    },
     { to: "/admin/users", icon: Users, label: t("nav.users"), end: true },
     { to: "/admin/awards", icon: Award, label: t("nav.awards"), end: true },
     { to: "/admin/audit", icon: FileSearch, label: t("nav.audit"), end: true },
@@ -43,12 +68,7 @@ export function Sidebar({ className }: SidebarProps) {
   const links = user?.role === "admin" ? adminLinks : intervenerLinks;
 
   return (
-    <aside
-      className={cn(
-        "w-64 border-r bg-card flex flex-col",
-        className
-      )}
-    >
+    <aside className={cn("w-64 border-r bg-card flex flex-col", className)}>
       <nav className="flex-1 space-y-1 p-4">
         {links.map((link) => (
           <NavLink
