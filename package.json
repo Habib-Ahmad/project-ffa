@@ -1,8 +1,10 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "ffa-intervener-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "FFA Intervener Application",
+  "author": "Ahmad Habib",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

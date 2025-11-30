@@ -8,11 +8,7 @@ import {
   Plus,
   FileText,
   MessageSquare,
-  CheckSquare,
-  Database,
   Users,
-  FileSearch,
-  Award,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -49,20 +45,18 @@ export function Sidebar({ className }: SidebarProps) {
   const adminLinks = [
     { to: "/", icon: LayoutDashboard, label: t("nav.dashboard"), end: true },
     {
-      to: "/admin/approvals",
-      icon: CheckSquare,
-      label: t("nav.approvals"),
+      to: "/admin/projects",
+      icon: FolderOpen,
+      label: t("nav.projects"),
       end: true,
     },
     {
-      to: "/admin/catalogs",
-      icon: Database,
-      label: t("nav.catalogs"),
+      to: "/admin/applications",
+      icon: FileText,
+      label: t("nav.applications"),
       end: true,
     },
     { to: "/admin/users", icon: Users, label: t("nav.users"), end: true },
-    { to: "/admin/awards", icon: Award, label: t("nav.awards"), end: true },
-    { to: "/admin/audit", icon: FileSearch, label: t("nav.audit"), end: true },
   ];
 
   const links = user?.role === "admin" ? adminLinks : intervenerLinks;

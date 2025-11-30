@@ -15,7 +15,9 @@ import ProjectDetails from "./pages/ProjectDetails";
 import Applications from "./pages/Applications";
 import ApplicationDetail from "./pages/ApplicationDetail";
 import Messages from "./pages/Messages";
-import AdminApprovals from "./pages/AdminApprovals";
+import AdminProjects from "./pages/AdminProjects";
+import AdminApplications from "./pages/AdminApplications";
+import AdminUsers from "./pages/AdminUsers";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
@@ -121,21 +123,21 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/admin/approvals"
+        path="/admin/projects"
         element={
           <ProtectedRoute>
             <AppLayout>
-              <AdminApprovals />
+              <AdminProjects />
             </AppLayout>
           </ProtectedRoute>
         }
       />
       <Route
-        path="/admin/catalogs"
+        path="/admin/applications"
         element={
           <ProtectedRoute>
             <AppLayout>
-              <Dashboard />
+              <AdminApplications />
             </AppLayout>
           </ProtectedRoute>
         }
@@ -145,27 +147,7 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <AppLayout>
-              <Dashboard />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/awards"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Dashboard />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/audit"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Dashboard />
+              <AdminUsers />
             </AppLayout>
           </ProtectedRoute>
         }

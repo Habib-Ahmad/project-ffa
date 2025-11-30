@@ -3,7 +3,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FolderOpen, FileText, CheckSquare, Plus, ArrowRight } from "lucide-react";
+import {
+  FolderOpen,
+  FileText,
+  CheckSquare,
+  Plus,
+  ArrowRight,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { StatusBadge } from "@/components/ui/status-badge";
 
@@ -46,9 +52,7 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold mb-2">
           {t("dashboard.welcome")}, {user?.name}
         </h1>
-        <p className="text-muted-foreground">
-          {user?.organizationName}
-        </p>
+        <p className="text-muted-foreground">{user?.organizationName}</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -79,7 +83,10 @@ export default function Dashboard() {
           <CardContent>
             <div className="space-y-4">
               {recentActivity.map((item) => (
-                <div key={item.id} className="flex items-center justify-between py-3 border-b last:border-0">
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between py-3 border-b last:border-0"
+                >
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{item.title}</p>
                     <p className="text-sm text-muted-foreground">{item.date}</p>
@@ -108,7 +115,10 @@ export default function Dashboard() {
                   </Button>
                 </Link>
                 <Link to="/projects" className="block">
-                  <Button variant="outline" className="w-full justify-between group">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between group"
+                  >
                     <span className="flex items-center gap-2">
                       <FolderOpen className="h-4 w-4" />
                       {t("nav.myProjects")}
@@ -117,7 +127,10 @@ export default function Dashboard() {
                   </Button>
                 </Link>
                 <Link to="/applications" className="block">
-                  <Button variant="outline" className="w-full justify-between group">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between group"
+                  >
                     <span className="flex items-center gap-2">
                       <FileText className="h-4 w-4" />
                       {t("nav.applications")}
@@ -138,7 +151,10 @@ export default function Dashboard() {
                   </Button>
                 </Link>
                 <Link to="/admin/users" className="block">
-                  <Button variant="outline" className="w-full justify-between group">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between group"
+                  >
                     <span className="flex items-center gap-2">
                       <FileText className="h-4 w-4" />
                       {t("nav.users")}
@@ -147,7 +163,10 @@ export default function Dashboard() {
                   </Button>
                 </Link>
                 <Link to="/admin/awards" className="block">
-                  <Button variant="outline" className="w-full justify-between group">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between group"
+                  >
                     <span className="flex items-center gap-2">
                       <FileText className="h-4 w-4" />
                       {t("nav.awards")}
