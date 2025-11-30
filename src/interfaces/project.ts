@@ -75,5 +75,7 @@ export interface UpdateProjectRequest {
   description?: string;
   totalBudget?: number;
   startDate?: string;
+  submissionDate?: string;
   locationId?: number;
+  status?: string;
 }

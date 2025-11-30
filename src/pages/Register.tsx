@@ -50,8 +50,6 @@ export default function Register() {
     const fetchInstitutions = async () => {
       try {
         const data = await authApi.getInstitutions();
-        // check if data is an array
-        console.log("data", data);
         if (!Array.isArray(data)) {
           throw new Error("Invalid institutions data");
         }

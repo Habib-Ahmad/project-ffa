@@ -56,6 +56,15 @@ export const projectsApi = {
     await apiClient.delete(API_URLS.PROJECTS.DELETE(id));
   },
 
+  changeStatus: async (id: number, status: string): Promise<Project> => {
+    const response = await apiClient.put<{ data: Project }>(
+      `${API_URLS.PROJECTS.BY_ID(id)}/status`,
+      null,
+      { params: { status } }
+    );
+    return response.data.data;
+  },
+
   search: async (query: string): Promise<Project[]> => {
     const response = await apiClient.get<{ data: { content: Project[] } }>(
       API_URLS.PROJECTS.SEARCH,

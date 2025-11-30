@@ -154,12 +154,25 @@ export default function NewProject() {
 
   const progress = ((currentStep + 1) / steps.length) * 100;
 
-  const handleSaveDraft = () => {
-    toast.success("Draft saved successfully");
+  const handleSaveDraft = async (values: ProjectFormValues) => {
+    try {
+      await projectsApi.create({
+        name: values.name,
+        description: values.description,
+        status: "DRAFT",
+        totalBudget: values.totalBudget,
+        startDate: values.startDate,
+        submissionDate: values.submissionDate,
+        locationId: values.locationId,
+      });
+      toast.success("Draft saved successfully");
+      navigate("/projects");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
   };
 
   const handleSubmit = async (values: ProjectFormValues) => {
-    console.log("Submitting project:", values);
     if (currentStep < steps.length - 1) {
       return;
     }
@@ -168,7 +181,7 @@ export default function NewProject() {
       await projectsApi.create({
         name: values.name,
         description: values.description,
-        status: values.status,
+        status: "PENDING_APPROVAL",
         totalBudget: values.totalBudget,
         startDate: values.startDate,
         submissionDate: values.submissionDate,
@@ -182,7 +195,6 @@ export default function NewProject() {
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
-      console.log("hit!!");
       setCurrentStep(currentStep + 1);
     }
   };
@@ -569,7 +581,7 @@ export default function NewProject() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={handleSaveDraft}
+                    onClick={() => handleSaveDraft(values)}
                   >
                     <Save className="h-4 w-4 mr-2" />
                     {t("common.saveDraft")}

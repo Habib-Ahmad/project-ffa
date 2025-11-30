@@ -28,6 +28,7 @@ interface EditProjectFormValues {
   description: string;
   totalBudget: number;
   startDate: string;
+  submissionDate: string;
   locationId: number;
 }
 
@@ -83,6 +84,7 @@ export default function EditProject() {
       .min(1, "Budget must be greater than 0")
       .required("Budget is required"),
     startDate: Yup.string().required("Start date is required"),
+    submissionDate: Yup.string().required("Submission date is required"),
     locationId: Yup.number()
       .min(1, "Please select a location")
       .required("Location is required"),
@@ -97,6 +99,7 @@ export default function EditProject() {
         description: values.description,
         totalBudget: values.totalBudget,
         startDate: values.startDate,
+        submissionDate: values.submissionDate,
         locationId: values.locationId,
       });
 
@@ -104,6 +107,37 @@ export default function EditProject() {
       navigate(`/projects/${project.id}`);
     } catch (error) {
       toast.error(getErrorMessage(error));
+    }
+  };
+
+  const handleSubmitForApproval = async (
+    values: EditProjectFormValues,
+    setSubmitting: (isSubmitting: boolean) => void
+  ) => {
+    if (!project) return;
+
+    try {
+      setSubmitting(true);
+
+      // First update the project details
+      await projectsApi.update(project.id, {
+        name: values.name,
+        description: values.description,
+        totalBudget: values.totalBudget,
+        startDate: values.startDate,
+        submissionDate: values.submissionDate,
+        locationId: values.locationId,
+      });
+
+      // Then change the status using the dedicated endpoint
+      await projectsApi.changeStatus(project.id, "PENDING_APPROVAL");
+
+      toast.success("Project submitted for approval");
+      navigate(`/projects/${project.id}`);
+    } catch (error) {
+      console.error("Error submitting for approval:", error);
+      toast.error(getErrorMessage(error));
+      setSubmitting(false);
     }
   };
 
@@ -127,6 +161,7 @@ export default function EditProject() {
     description: project.description,
     totalBudget: project.totalBudget,
     startDate: project.startDate,
+    submissionDate: project.submissionDate,
     locationId: project.location.id,
   };
 
@@ -138,7 +173,14 @@ export default function EditProject() {
       validateOnChange={true}
       validateOnBlur={true}
     >
-      {({ values, errors, touched, isSubmitting, setFieldValue }) => (
+      {({
+        values,
+        errors,
+        touched,
+        isSubmitting,
+        setFieldValue,
+        setSubmitting,
+      }) => (
         <Form className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-center gap-4">
             <Button
@@ -242,6 +284,28 @@ export default function EditProject() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="submissionDate">
+                  {t("project.submissionDate")}
+                </Label>
+                <Field
+                  as={Input}
+                  id="submissionDate"
+                  name="submissionDate"
+                  type="date"
+                  className={
+                    touched.submissionDate && errors.submissionDate
+                      ? "border-destructive"
+                      : ""
+                  }
+                />
+                {touched.submissionDate && errors.submissionDate && (
+                  <p className="text-sm text-destructive">
+                    {errors.submissionDate}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="locationId">{t("project.location")}</Label>
                 <Select
                   value={String(values.locationId)}
@@ -289,9 +353,16 @@ export default function EditProject() {
             >
               {t("common.cancel")}
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" variant="outline" disabled={isSubmitting}>
               <Save className="h-4 w-4 mr-2" />
               {isSubmitting ? t("common.loading") : t("common.save")}
+            </Button>
+            <Button
+              type="button"
+              onClick={() => handleSubmitForApproval(values, setSubmitting)}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? t("common.loading") : "Submit for Approval"}
             </Button>
           </div>
         </Form>

@@ -71,13 +71,9 @@ export default function AdminProjects() {
 
     try {
       setProcessing(true);
-      await projectsApi.update(selectedProject.id, {
-        name: selectedProject.name,
-        description: selectedProject.description,
-        totalBudget: selectedProject.totalBudget,
-        startDate: selectedProject.startDate,
-        locationId: selectedProject.locationId,
-      });
+      // Change project status to PUBLISHED using dedicated endpoint
+      await projectsApi.changeStatus(selectedProject.id, "PUBLISHED");
+
       toast.success("Project approved and published");
       fetchProjects();
       setSelectedProject(null);
@@ -98,8 +94,11 @@ export default function AdminProjects() {
 
     try {
       setProcessing(true);
-      // For now, just show success - backend endpoint needed for status update with comments
-      toast.success("Project rejected");
+      // Change project status back to DRAFT so intervener can edit
+      await projectsApi.changeStatus(selectedProject.id, "DRAFT");
+
+      // TODO: Send rejection comments to intervener (needs separate API endpoint)
+      toast.success("Project rejected and returned to draft");
       fetchProjects();
       setSelectedProject(null);
       setActionType(null);
