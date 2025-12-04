@@ -4,8 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, FileText, Download, AlertCircle, User, Mail, Phone, MapPin, CheckCircle, XCircle, MessageCircle } from "lucide-react";
-import { StatusBadge } from "@/components/ui/status-badge";
+import {
+  ArrowLeft,
+  FileText,
+  Download,
+  User,
+  Mail,
+  CheckCircle,
+  MapPin,
+} from "lucide-react";
+import { StatusBadge, type Status } from "@/components/ui/status-badge";
 import {
   Dialog,
   DialogContent,
@@ -16,33 +24,47 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { SuccessModal } from "@/components/ui/success-modal";
+import { applicationsApi } from "@/api";
+import type { Application } from "@/interfaces";
+import { getErrorMessage } from "@/lib/utils";
 
 export default function ApplicationDetail() {
   const { t } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
-  const [replacementReason, setReplacementReason] = useState("");
-  const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
-  const [rejectionReason, setRejectionReason] = useState("");
+  const [application, setApplication] = useState<Application | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successMessage, setSuccessMessage] = useState({ title: "", description: "" });
+  const [successMessage, setSuccessMessage] = useState({
+    title: "",
+    description: "",
+  });
+  const [processing, setProcessing] = useState(false);
 
-  // Mock data
-  const application = {
-    id: id,
-    applicantName: "Marie Dubois",
-    applicantEmail: "marie.dubois@example.com",
-    applicantPhone: "+33 6 12 34 56 78",
-    applicantAddress: "45 Rue de la République, 75003 Paris, France",
-    projectTitle: "Youth Entrepreneurship Program 2024",
-    status: "under_review" as const,
-    submittedOn: "2024-01-20",
-    score: 85,
-    bio: "Experienced entrepreneur with 5 years in sustainable business development. Passionate about creating opportunities for youth in underserved communities.",
-  };
+  useEffect(() => {
+    const fetchApplication = async () => {
+      if (!id) {
+        navigate("/applications");
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const data = await applicationsApi.getById(parseInt(id));
+        setApplication(data);
+      } catch (error) {
+        toast.error(getErrorMessage(error));
+        navigate("/applications");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApplication();
+  }, [id, navigate]);
 
   const documents = [
     {
@@ -79,7 +101,7 @@ export default function ApplicationDetail() {
       toast.error(t("application.replacementReasonRequired"));
       return;
     }
-    
+
     setSuccessMessage({
       title: t("application.replacementRequestedTitle"),
       description: t("application.replacementRequestedDesc"),
@@ -89,26 +111,23 @@ export default function ApplicationDetail() {
     setSelectedDocument(null);
   };
 
-  const handleApprove = () => {
-    setSuccessMessage({
-      title: t("application.approvedTitle"),
-      description: t("application.approvedDesc"),
-    });
-    setShowSuccessModal(true);
-  };
+  const handleApprove = async () => {
+    if (!application) return;
 
-  const handleReject = () => {
-    if (!rejectionReason.trim()) {
-      toast.error(t("application.rejectionReasonRequired"));
-      return;
+    try {
+      setProcessing(true);
+      await applicationsApi.changeStatus(application.id, "AWARDED");
+      setSuccessMessage({
+        title: "Application Awarded",
+        description:
+          "The application has been awarded successfully. The applicant will be notified.",
+      });
+      setShowSuccessModal(true);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setProcessing(false);
     }
-    
-    setSuccessMessage({
-      title: t("application.rejectedTitle"),
-      description: t("application.rejectedDesc"),
-    });
-    setShowSuccessModal(true);
-    setRejectionReason("");
   };
 
   const getStatusColor = (status: string) => {
@@ -122,6 +141,29 @@ export default function ApplicationDetail() {
     }
   };
 
+  const getStatusValue = (status: string): Status => {
+    const statusMap: Record<string, Status> = {
+      DRAFT: "draft",
+      AWARDED: "awarded",
+    };
+    return (statusMap[status] || "draft") as Status;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">{t("common.loading")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!application) {
+    return null;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -129,61 +171,31 @@ export default function ApplicationDetail() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold">{application.applicantName}</h1>
+          <h1 className="text-3xl font-bold">{application.title}</h1>
           <p className="text-muted-foreground mt-1">
             {t("nav.applications")} #{application.id}
           </p>
         </div>
-        <StatusBadge status={application.status} />
+        <StatusBadge status={getStatusValue(application.status)} />
       </div>
 
-      {application.status === "under_review" && (
+      {application.status === "DRAFT" && (
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="pt-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <p className="text-sm font-medium">{t("application.reviewActions")}</p>
+              <p className="text-sm font-medium">
+                {t("application.reviewActions")}
+              </p>
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant="default"
                   onClick={handleApprove}
+                  disabled={processing}
                   className="bg-success hover:bg-success/90"
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
-                  {t("application.approve")}
+                  {processing ? t("common.loading") : "Award Application"}
                 </Button>
-                
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="destructive">
-                      <XCircle className="h-4 w-4 mr-2" />
-                      {t("application.reject")}
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>{t("application.rejectApplication")}</DialogTitle>
-                      <DialogDescription>
-                        {t("application.rejectApplicationDesc")}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <Textarea
-                        placeholder={t("application.rejectionReason")}
-                        value={rejectionReason}
-                        onChange={(e) => setRejectionReason(e.target.value)}
-                        rows={4}
-                      />
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setRejectionReason("")}>
-                        {t("common.cancel")}
-                      </Button>
-                      <Button variant="destructive" onClick={handleReject}>
-                        {t("application.reject")}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
               </div>
             </div>
           </CardContent>
@@ -193,8 +205,12 @@ export default function ApplicationDetail() {
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
           <TabsTrigger value="profile">{t("application.profile")}</TabsTrigger>
-          <TabsTrigger value="documents">{t("application.documents")}</TabsTrigger>
-          <TabsTrigger value="timeline">{t("application.timeline")}</TabsTrigger>
+          <TabsTrigger value="documents">
+            {t("application.documents")}
+          </TabsTrigger>
+          <TabsTrigger value="timeline">
+            {t("application.timeline")}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="space-y-6">
@@ -207,39 +223,64 @@ export default function ApplicationDetail() {
                 <div className="flex items-start gap-3">
                   <User className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">{t("application.fullName")}</p>
-                    <p className="text-sm text-muted-foreground">{application.applicantName}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">{t("common.email")}</p>
-                    <p className="text-sm text-muted-foreground">{application.applicantEmail}</p>
+                    <p className="text-sm font-medium">
+                      {t("application.fullName")}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {application.user
+                        ? `${application.user.firstName} ${application.user.lastName}`
+                        : "N/A"}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <Phone className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">{t("application.phone")}</p>
-                    <p className="text-sm text-muted-foreground">{application.applicantPhone}</p>
+                    <p className="text-sm font-medium">{t("common.email")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {application.user?.email || "N/A"}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">{t("application.address")}</p>
-                    <p className="text-sm text-muted-foreground">{application.applicantAddress}</p>
+                    <p className="text-sm font-medium">
+                      {t("application.location")}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {application.location || "N/A"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Application Date</p>
+                    <p className="text-sm text-muted-foreground">
+                      {application.dateApplication}
+                    </p>
                   </div>
                 </div>
               </div>
 
               <div className="pt-4 border-t">
-                <p className="text-sm font-medium mb-2">{t("application.bio")}</p>
-                <p className="text-sm text-muted-foreground">{application.bio}</p>
+                <p className="text-sm font-medium mb-2">Motivation</p>
+                <p className="text-sm text-muted-foreground">
+                  {application.motivation}
+                </p>
+              </div>
+
+              <div className="pt-4 border-t">
+                <p className="text-sm font-medium mb-2">
+                  {t("project.description")}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {application.description}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -252,18 +293,43 @@ export default function ApplicationDetail() {
               <div className="grid gap-4 md:grid-cols-3">
                 <div>
                   <p className="text-sm font-medium">{t("project.title")}</p>
-                  <p className="text-sm text-muted-foreground">{application.projectTitle}</p>
-                </div>
-                
-                <div>
-                  <p className="text-sm font-medium">{t("application.submittedOn")}</p>
-                  <p className="text-sm text-muted-foreground">{application.submittedOn}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {application.project?.name || "N/A"}
+                  </p>
                 </div>
 
                 <div>
-                  <p className="text-sm font-medium">{t("application.score")}</p>
+                  <p className="text-sm font-medium">Budget</p>
+                  <p className="text-sm text-muted-foreground">
+                    ${application.budget.toLocaleString()}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium">Scope</p>
+                  <p className="text-sm text-muted-foreground">
+                    {application.scope}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium">Start Date</p>
+                  <p className="text-sm text-muted-foreground">
+                    {application.startDate}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium">End Date</p>
+                  <p className="text-sm text-muted-foreground">
+                    {application.endDate}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium">Current Step</p>
                   <Badge variant="secondary" className="text-sm">
-                    {application.score}/100
+                    Step {application.currentStep}
                   </Badge>
                 </div>
               </div>
@@ -278,83 +344,38 @@ export default function ApplicationDetail() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {documents.map((doc) => (
-                  <div
-                    key={doc.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
-                    <div className="flex items-center gap-4 flex-1">
-                      <FileText className="h-8 w-8 text-muted-foreground" />
-                      <div className="flex-1">
-                        <p className="font-medium">{doc.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {doc.fileName} • {doc.size}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t("application.uploadedOn")}: {doc.uploadedOn}
-                        </p>
+                {application.documentsSubmitted &&
+                application.documentsSubmitted.length > 0 ? (
+                  application.documentsSubmitted.map((doc) => (
+                    <div
+                      key={doc.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        <FileText className="h-8 w-8 text-muted-foreground" />
+                        <div className="flex-1">
+                          <p className="font-medium">{doc.documentType.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {doc.path}
+                          </p>
+                        </div>
                       </div>
-                      <Badge
-                        variant={doc.status === "approved" ? "default" : "secondary"}
-                        className={getStatusColor(doc.status)}
-                      >
-                        {t(`application.status.${doc.status}`)}
-                      </Badge>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                          <Download className="h-4 w-4 mr-2" />
+                          Download
+                        </Button>
+                      </div>
                     </div>
-                    
-                    <div className="flex flex-wrap items-center gap-2 ml-4">
-                      <Button variant="outline" size="sm">
-                        <Download className="h-4 w-4 mr-2" />
-                        {t("common.download")}
-                      </Button>
-                      
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedDocument(doc.id)}
-                          >
-                            <AlertCircle className="h-4 w-4 mr-2" />
-                            {t("application.requestReplacement")}
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>{t("application.requestReplacement")}</DialogTitle>
-                            <DialogDescription>
-                              {t("application.requestReplacementDesc")}
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                              <p className="text-sm font-medium">
-                                {t("application.documentName")}: {doc.name}
-                              </p>
-                              <Textarea
-                                placeholder={t("application.replacementReason")}
-                                value={replacementReason}
-                                onChange={(e) => setReplacementReason(e.target.value)}
-                                rows={4}
-                              />
-                            </div>
-                          </div>
-                          <DialogFooter>
-                            <Button
-                              variant="outline"
-                              onClick={() => setReplacementReason("")}
-                            >
-                              {t("common.cancel")}
-                            </Button>
-                            <Button onClick={handleRequestReplacement}>
-                              {t("common.send")}
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground">
+                      No documents submitted
+                    </p>
                   </div>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>
@@ -367,38 +388,10 @@ export default function ApplicationDetail() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="h-3 w-3 rounded-full bg-primary" />
-                    <div className="w-px h-full bg-border" />
-                  </div>
-                  <div className="pb-8">
-                    <p className="font-medium">{t("application.status.submitted")}</p>
-                    <p className="text-sm text-muted-foreground">2024-01-20 14:30</p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="h-3 w-3 rounded-full bg-primary" />
-                    <div className="w-px h-full bg-border" />
-                  </div>
-                  <div className="pb-8">
-                    <p className="font-medium">{t("application.status.under_review")}</p>
-                    <p className="text-sm text-muted-foreground">2024-01-22 09:15</p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="h-3 w-3 rounded-full bg-muted" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-muted-foreground">
-                      {t("application.status.shortlisted")}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{t("common.pending")}</p>
-                  </div>
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">
+                    Timeline information will be available soon
+                  </p>
                 </div>
               </div>
             </CardContent>

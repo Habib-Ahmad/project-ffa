@@ -15,9 +15,6 @@ import ProjectDetails from "./pages/ProjectDetails";
 import Applications from "./pages/Applications";
 import ApplicationDetail from "./pages/ApplicationDetail";
 import Messages from "./pages/Messages";
-import AdminProjects from "./pages/AdminProjects";
-import AdminApplications from "./pages/AdminApplications";
-import AdminUsers from "./pages/AdminUsers";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
@@ -118,36 +115,6 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <AppLayout>
               <Messages />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/projects"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <AdminProjects />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/applications"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <AdminApplications />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/users"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <AdminUsers />
             </AppLayout>
           </ProtectedRoute>
         }

@@ -12,11 +12,13 @@ export interface DocumentSubmitted {
   documentType: DocumentType;
 }
 
+export type ApplicationStatus = "DRAFT" | "AWARDED";
+
 export interface Application {
   id: number;
   dateApplication: string;
   motivation: string;
-  status: string;
+  status: ApplicationStatus;
   title: string;
   description: string;
   scope: string;
@@ -29,6 +31,16 @@ export interface Application {
   projectId: number;
   documentsSubmitted: DocumentSubmitted[];
   location: string;
+  user?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  project?: {
+    id: number;
+    name: string;
+  };
 }
 
 export interface Location {
@@ -55,7 +67,7 @@ export interface Project {
   lastModificationDate: string;
   isDeleted: boolean;
   intervener: string | null;
-  winnerUser: any | null;
+  winnerUser: unknown | null;
   applications: Application[] | null;
   location: Location;
 }

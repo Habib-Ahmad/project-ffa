@@ -25,4 +25,14 @@ export const API_URLS = {
     DELETE: (id: number) => `ffaAPI/intervener/projects/${id}`,
     SEARCH: "ffaAPI/intervener/projects/search",
   },
+
+  APPLICATIONS: {
+    LIST: "ffaAPI/intervener/applications",
+    BY_ID: (id: number) => `ffaAPI/intervener/applications/${id}`,
+    BY_PROJECT: (projectId: number) =>
+      `ffaAPI/intervener/projects/${projectId}/applications`,
+    SEARCH: "ffaAPI/intervener/applications/search",
+    APPROVE: (id: number) => `ffaAPI/intervener/applications/${id}/approve`,
+    REJECT: (id: number) => `ffaAPI/intervener/applications/${id}/reject`,
+  },
 } as const;

@@ -8,7 +8,6 @@ import {
   Plus,
   FileText,
   MessageSquare,
-  Users,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -42,29 +41,10 @@ export function Sidebar({ className }: SidebarProps) {
     },
   ];
 
-  const adminLinks = [
-    { to: "/", icon: LayoutDashboard, label: t("nav.dashboard"), end: true },
-    {
-      to: "/admin/projects",
-      icon: FolderOpen,
-      label: t("nav.projects"),
-      end: true,
-    },
-    {
-      to: "/admin/applications",
-      icon: FileText,
-      label: t("nav.applications"),
-      end: true,
-    },
-    { to: "/admin/users", icon: Users, label: t("nav.users"), end: true },
-  ];
-
-  const links = user?.role === "admin" ? adminLinks : intervenerLinks;
-
   return (
     <aside className={cn("w-64 border-r bg-card flex flex-col", className)}>
       <nav className="flex-1 space-y-1 p-4">
-        {links.map((link) => (
+        {intervenerLinks.map((link) => (
           <NavLink
             key={link.to}
             to={link.to}
@@ -86,9 +66,7 @@ export function Sidebar({ className }: SidebarProps) {
 
       <div className="p-4 border-t">
         <div className="rounded-lg bg-muted p-3 text-xs">
-          <p className="font-medium mb-1">
-            {user?.role === "admin" ? "Admin" : "Intervener"}
-          </p>
+          <p className="font-medium mb-1">Intervener</p>
           <p className="text-muted-foreground line-clamp-2">
             {user?.organizationName}
           </p>
