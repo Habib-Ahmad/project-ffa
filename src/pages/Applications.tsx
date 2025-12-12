@@ -12,20 +12,12 @@ import {
 } from "@/components/ui/select";
 import { StatusBadge, type Status } from "@/components/ui/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Search, CheckCircle, XCircle } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { applicationsApi } from "@/api";
 import type { Application } from "@/interfaces";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 export default function Applications() {
   const { t } = useLanguage();
@@ -34,12 +26,6 @@ export default function Applications() {
   const [searchQuery, setSearchQuery] = useState("");
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedApplication, setSelectedApplication] =
-    useState<Application | null>(null);
-  const [actionType, setActionType] = useState<"approve" | "reject" | null>(
-    null
-  );
-  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     fetchApplications();
@@ -48,7 +34,6 @@ export default function Applications() {
   const fetchApplications = async () => {
     try {
       const response = await applicationsApi.getAll();
-      console.log("Applications fetched:", response);
 
       // Filter to only show applications for the logged-in intervener's projects
       setApplications(response.content);
@@ -59,74 +44,13 @@ export default function Applications() {
     }
   };
 
-  const handleApprove = async () => {
-    if (!selectedApplication) return;
-
-    try {
-      setProcessing(true);
-      const updatedApplication = await applicationsApi.approve(
-        selectedApplication.id
-      );
-      console.log("Application approved:", updatedApplication);
-
-      // Update the application in the list
-      setApplications((prev) =>
-        prev.map((app) =>
-          app.id === updatedApplication.id ? updatedApplication : app
-        )
-      );
-
-      toast.success("Application approved successfully");
-      setSelectedApplication(null);
-      setActionType(null);
-    } catch (error) {
-      toast.error(getErrorMessage(error));
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const handleReject = async () => {
-    if (!selectedApplication) return;
-
-    try {
-      setProcessing(true);
-      const updatedApplication = await applicationsApi.reject(
-        selectedApplication.id
-      );
-      console.log("Application rejected:", updatedApplication);
-
-      // Update the application in the list
-      setApplications((prev) =>
-        prev.map((app) =>
-          app.id === updatedApplication.id ? updatedApplication : app
-        )
-      );
-
-      toast.success("Application rejected successfully");
-      setSelectedApplication(null);
-      setActionType(null);
-    } catch (error) {
-      toast.error(getErrorMessage(error));
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const openActionDialog = (
-    application: Application,
-    action: "approve" | "reject"
-  ) => {
-    setSelectedApplication(application);
-    setActionType(action);
-  };
-
   const getStatusValue = (status: string): Status => {
     const statusMap: Record<string, Status> = {
-      DRAFT: "draft",
-      AWARDED: "awarded",
+      DRAFT: "pending",
+      APPROVED: "approved",
+      REJECTED: "rejected",
     };
-    return (statusMap[status] || "draft") as Status;
+    return (statusMap[status] || "pending") as Status;
   };
 
   const filteredApplications = applications.filter((app) => {
@@ -167,8 +91,9 @@ export default function Applications() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Applications</SelectItem>
-                <SelectItem value="DRAFT">Draft</SelectItem>
-                <SelectItem value="AWARDED">Awarded</SelectItem>
+                <SelectItem value="DRAFT">Pending</SelectItem>
+                <SelectItem value="APPROVED">Approved</SelectItem>
+                <SelectItem value="REJECTED">Rejected</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -228,30 +153,6 @@ export default function Applications() {
                     >
                       View Details
                     </Button>
-                    {application.status === "DRAFT" && (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() =>
-                            openActionDialog(application, "approve")
-                          }
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() =>
-                            openActionDialog(application, "reject")
-                          }
-                        >
-                          <XCircle className="h-4 w-4 mr-2" />
-                          Reject
-                        </Button>
-                      </>
-                    )}
                   </div>
                 </div>
               </CardContent>
@@ -267,50 +168,6 @@ export default function Applications() {
           )}
         </div>
       )}
-
-      <Dialog
-        open={!!actionType}
-        onOpenChange={() => {
-          setActionType(null);
-          setSelectedApplication(null);
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {actionType === "approve" ? "Approve" : "Reject"} Application
-            </DialogTitle>
-            <DialogDescription>
-              Are you sure you want to {actionType} Application #
-              {selectedApplication?.id}? This will notify the applicant.
-            </DialogDescription>
-          </DialogHeader>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setActionType(null);
-                setSelectedApplication(null);
-              }}
-              disabled={processing}
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              onClick={actionType === "approve" ? handleApprove : handleReject}
-              disabled={processing}
-              variant={actionType === "approve" ? "default" : "destructive"}
-            >
-              {processing
-                ? t("common.loading")
-                : actionType === "approve"
-                ? "Approve"
-                : "Reject"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -12,7 +12,7 @@ export interface DocumentSubmitted {
   documentType: DocumentType;
 }
 
-export type ApplicationStatus = "DRAFT" | "AWARDED";
+export type ApplicationStatus = "DRAFT" | "APPROVED" | "REJECTED";
 
 export interface Application {
   id: number;

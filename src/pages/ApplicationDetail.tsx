@@ -12,6 +12,7 @@ import {
   Mail,
   CheckCircle,
   MapPin,
+  XCircle,
 } from "lucide-react";
 import { StatusBadge, type Status } from "@/components/ui/status-badge";
 import {
@@ -96,31 +97,37 @@ export default function ApplicationDetail() {
     },
   ];
 
-  const handleRequestReplacement = () => {
-    if (!replacementReason.trim()) {
-      toast.error(t("application.replacementReasonRequired"));
-      return;
-    }
-
-    setSuccessMessage({
-      title: t("application.replacementRequestedTitle"),
-      description: t("application.replacementRequestedDesc"),
-    });
-    setShowSuccessModal(true);
-    setReplacementReason("");
-    setSelectedDocument(null);
-  };
-
   const handleApprove = async () => {
     if (!application) return;
 
     try {
       setProcessing(true);
-      await applicationsApi.changeStatus(application.id, "AWARDED");
+      const updatedApplication = await applicationsApi.approve(application.id);
+      setApplication(updatedApplication);
       setSuccessMessage({
-        title: "Application Awarded",
+        title: "Application Approved",
         description:
-          "The application has been awarded successfully. The applicant will be notified.",
+          "The application has been approved successfully. The applicant will be notified.",
+      });
+      setShowSuccessModal(true);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!application) return;
+
+    try {
+      setProcessing(true);
+      const updatedApplication = await applicationsApi.reject(application.id);
+      setApplication(updatedApplication);
+      setSuccessMessage({
+        title: "Application Rejected",
+        description:
+          "The application has been rejected. The applicant will be notified.",
       });
       setShowSuccessModal(true);
     } catch (error) {
@@ -143,10 +150,11 @@ export default function ApplicationDetail() {
 
   const getStatusValue = (status: string): Status => {
     const statusMap: Record<string, Status> = {
-      DRAFT: "draft",
-      AWARDED: "awarded",
+      DRAFT: "pending",
+      APPROVED: "approved",
+      REJECTED: "rejected",
     };
-    return (statusMap[status] || "draft") as Status;
+    return (statusMap[status] || "pending") as Status;
   };
 
   if (loading) {
@@ -171,7 +179,7 @@ export default function ApplicationDetail() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold">{application.title}</h1>
+          <h1 className="text-3xl font-bold">Application #{application.id}</h1>
           <p className="text-muted-foreground mt-1">
             {t("nav.applications")} #{application.id}
           </p>
@@ -194,7 +202,15 @@ export default function ApplicationDetail() {
                   className="bg-success hover:bg-success/90"
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
-                  {processing ? t("common.loading") : "Award Application"}
+                  {processing ? t("common.loading") : "Approve Application"}
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleReject}
+                  disabled={processing}
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  {processing ? t("common.loading") : "Reject Application"}
                 </Button>
               </div>
             </div>
@@ -203,13 +219,10 @@ export default function ApplicationDetail() {
       )}
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
+        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
           <TabsTrigger value="profile">{t("application.profile")}</TabsTrigger>
           <TabsTrigger value="documents">
             {t("application.documents")}
-          </TabsTrigger>
-          <TabsTrigger value="timeline">
-            {t("application.timeline")}
           </TabsTrigger>
         </TabsList>
 
@@ -261,7 +274,9 @@ export default function ApplicationDetail() {
                   <div>
                     <p className="text-sm font-medium">Application Date</p>
                     <p className="text-sm text-muted-foreground">
-                      {application.dateApplication}
+                      {new Date(
+                        application.dateApplication
+                      ).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -279,7 +294,7 @@ export default function ApplicationDetail() {
                   {t("project.description")}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {application.description}
+                  {application.description || "No description provided"}
                 </p>
               </div>
             </CardContent>
@@ -301,28 +316,30 @@ export default function ApplicationDetail() {
                 <div>
                   <p className="text-sm font-medium">Budget</p>
                   <p className="text-sm text-muted-foreground">
-                    ${application.budget.toLocaleString()}
+                    {application.budget
+                      ? `$${application.budget.toLocaleString()}`
+                      : "N/A"}
                   </p>
                 </div>
 
                 <div>
                   <p className="text-sm font-medium">Scope</p>
                   <p className="text-sm text-muted-foreground">
-                    {application.scope}
+                    {application.scope || "N/A"}
                   </p>
                 </div>
 
                 <div>
                   <p className="text-sm font-medium">Start Date</p>
                   <p className="text-sm text-muted-foreground">
-                    {application.startDate}
+                    {application.startDate || "N/A"}
                   </p>
                 </div>
 
                 <div>
                   <p className="text-sm font-medium">End Date</p>
                   <p className="text-sm text-muted-foreground">
-                    {application.endDate}
+                    {application.endDate || "N/A"}
                   </p>
                 </div>
 
@@ -376,23 +393,6 @@ export default function ApplicationDetail() {
                     </p>
                   </div>
                 )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="timeline" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("application.timeline")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">
-                    Timeline information will be available soon
-                  </p>
-                </div>
               </div>
             </CardContent>
           </Card>
