@@ -83,9 +83,6 @@ export default function Register() {
     email: Yup.string()
       .email(t("auth.emailInvalid") || "Please enter a valid email")
       .required(t("auth.emailRequired") || "Email is required"),
-    login: Yup.string()
-      .required(t("auth.loginRequired") || "Login is required")
-      .trim(),
     organizationId: Yup.string().required(
       t("auth.organizationRequired") || "Please select an organization"
     ),
@@ -129,11 +126,14 @@ export default function Register() {
     { setSubmitting }: FormikHelpers<RegisterFormValues>
   ) => {
     try {
+      // Auto-generate login from email (part before @)
+      const login = values.email.split('@')[0];
+      
       await authApi.register({
         firstName: values.firstName,
         lastName: values.lastName,
         email: values.email,
-        login: values.login,
+        login: login,
         password: values.password,
         organizationId: parseInt(values.organizationId, 10),
       });
@@ -273,27 +273,6 @@ export default function Register() {
                     />
                     {touched.email && errors.email && (
                       <p className="text-sm text-destructive">{errors.email}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="login">
-                      {t("auth.username") || "Username"}
-                    </Label>
-                    <Field
-                      as={Input}
-                      id="login"
-                      name="login"
-                      type="text"
-                      placeholder="username"
-                      className={
-                        touched.login && errors.login
-                          ? "border-destructive"
-                          : ""
-                      }
-                    />
-                    {touched.login && errors.login && (
-                      <p className="text-sm text-destructive">{errors.login}</p>
                     )}
                   </div>
 

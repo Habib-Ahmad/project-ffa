@@ -26,9 +26,13 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    // Restore user from localStorage on mount
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+  const INACTIVITY_TIMEOUT = 500 * 60 * 1000; // 5 minutes
 
   const resetInactivityTimer = () => {
     if (inactivityTimerRef.current) {
@@ -44,6 +48,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = () => {
     setUser(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("refreshToken");
     if (inactivityTimerRef.current) {
       clearTimeout(inactivityTimerRef.current);
     }
@@ -71,6 +78,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           clearTimeout(inactivityTimerRef.current);
         }
       };
+    }
+  }, [user]);
+
+  // Persist user to localStorage whenever it changes
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("user");
     }
   }, [user]);
 
