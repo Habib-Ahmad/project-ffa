@@ -7,7 +7,6 @@ import {
   FolderOpen,
   Plus,
   FileText,
-  MessageSquare,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -31,12 +30,6 @@ export function Sidebar({ className }: SidebarProps) {
       to: "/applications",
       icon: FileText,
       label: t("nav.applications"),
-      end: true,
-    },
-    {
-      to: "/messages",
-      icon: MessageSquare,
-      label: t("nav.messages"),
       end: true,
     },
   ];

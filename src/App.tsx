@@ -14,7 +14,6 @@ import EditProject from "./pages/EditProject";
 import ProjectDetails from "./pages/ProjectDetails";
 import Applications from "./pages/Applications";
 import ApplicationDetail from "./pages/ApplicationDetail";
-import Messages from "./pages/Messages";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
@@ -105,16 +104,6 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <AppLayout>
               <ApplicationDetail />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/messages"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Messages />
             </AppLayout>
           </ProtectedRoute>
         }
