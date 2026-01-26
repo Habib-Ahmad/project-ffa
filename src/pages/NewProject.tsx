@@ -173,6 +173,11 @@ export default function NewProject() {
   };
 
   const handleSubmit = async (values: ProjectFormValues) => {
+    // Only submit if on the final step
+    if (currentStep !== steps.length - 1) {
+      return;
+    }
+
     try {
       await projectsApi.create({
         name: values.name,

@@ -138,7 +138,7 @@ export default function Applications() {
                       <div>
                         <span className="font-medium">Submitted:</span>{" "}
                         {new Date(
-                          application.dateApplication
+                          application.dateApplication,
                         ).toLocaleDateString()}
                       </div>
                     </div>
