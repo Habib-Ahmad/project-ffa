@@ -230,7 +230,7 @@ export default function ProjectDetails() {
         </CardContent>
       </Card>
 
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>{t("project.applicants")}</CardTitle>
         </CardHeader>
@@ -287,7 +287,7 @@ export default function ProjectDetails() {
             </div>
           )}
         </CardContent>
-      </Card>
+      </Card> */}
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>

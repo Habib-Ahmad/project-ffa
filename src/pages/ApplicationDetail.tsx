@@ -3,27 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  ArrowLeft,
-  FileText,
-  Download,
-  User,
-  Mail,
-  CheckCircle,
-  MapPin,
-  XCircle,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
 import { StatusBadge, type Status } from "@/components/ui/status-badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -67,35 +48,23 @@ export default function ApplicationDetail() {
     fetchApplication();
   }, [id, navigate]);
 
-  const documents = [
-    {
-      id: "1",
-      name: "National ID",
-      type: "Passport",
-      fileName: "passport_marie_dubois.pdf",
-      uploadedOn: "2024-01-20",
-      status: "approved" as const,
-      size: "2.4 MB",
-    },
-    {
-      id: "2",
-      name: "Business Plan",
-      type: "PDF Document",
-      fileName: "business_plan_2024.pdf",
-      uploadedOn: "2024-01-20",
-      status: "pending" as const,
-      size: "5.1 MB",
-    },
-    {
-      id: "3",
-      name: "Financial Statement",
-      type: "Excel Spreadsheet",
-      fileName: "financial_statement_2023.xlsx",
-      uploadedOn: "2024-01-20",
-      status: "pending" as const,
-      size: "1.8 MB",
-    },
-  ];
+  const getStatusValue = (status: string): Status => {
+    const statusMap: Record<string, Status> = {
+      DRAFT: "pending",
+      APPROVED: "approved",
+      REJECTED: "rejected",
+    };
+    return (statusMap[status] || "pending") as Status;
+  };
+
+  const getStatusDisplay = (status: string): string => {
+    const statusMap: Record<string, string> = {
+      DRAFT: "Under Review",
+      APPROVED: "Approved",
+      REJECTED: "Rejected",
+    };
+    return statusMap[status] || status;
+  };
 
   const handleApprove = async () => {
     if (!application) return;
@@ -146,15 +115,6 @@ export default function ApplicationDetail() {
       default:
         return "text-warning";
     }
-  };
-
-  const getStatusValue = (status: string): Status => {
-    const statusMap: Record<string, Status> = {
-      DRAFT: "pending",
-      APPROVED: "approved",
-      REJECTED: "rejected",
-    };
-    return (statusMap[status] || "pending") as Status;
   };
 
   if (loading) {
@@ -218,186 +178,40 @@ export default function ApplicationDetail() {
         </Card>
       )}
 
-      <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
-          <TabsTrigger value="profile">{t("application.profile")}</TabsTrigger>
-          <TabsTrigger value="documents">
-            {t("application.documents")}
-          </TabsTrigger>
-        </TabsList>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("application.applicationInfo")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <p className="text-sm font-medium">Application ID</p>
+              <p className="text-sm text-muted-foreground">{application.id}</p>
+            </div>
 
-        <TabsContent value="profile" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("application.applicantInfo")}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="flex items-start gap-3">
-                  <User className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">
-                      {t("application.fullName")}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {application.user
-                        ? `${application.user.firstName} ${application.user.lastName}`
-                        : "N/A"}
-                    </p>
-                  </div>
-                </div>
+            <div>
+              <p className="text-sm font-medium">Application Date</p>
+              <p className="text-sm text-muted-foreground">
+                {new Date(application.dateApplication).toLocaleDateString()}
+              </p>
+            </div>
 
-                <div className="flex items-start gap-3">
-                  <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">{t("common.email")}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {application.user?.email || "N/A"}
-                    </p>
-                  </div>
-                </div>
+            <div>
+              <p className="text-sm font-medium">Status</p>
+              <Badge variant="secondary" className="text-sm">
+                {getStatusDisplay(application.status)}
+              </Badge>
+            </div>
+          </div>
 
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">
-                      {t("application.location")}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {application.location || "N/A"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">Application Date</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(
-                        application.dateApplication
-                      ).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t">
-                <p className="text-sm font-medium mb-2">Motivation</p>
-                <p className="text-sm text-muted-foreground">
-                  {application.motivation}
-                </p>
-              </div>
-
-              <div className="pt-4 border-t">
-                <p className="text-sm font-medium mb-2">
-                  {t("project.description")}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {application.description || "No description provided"}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("application.applicationInfo")}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-3">
-                <div>
-                  <p className="text-sm font-medium">{t("project.title")}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {application.project?.name || "N/A"}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium">Budget</p>
-                  <p className="text-sm text-muted-foreground">
-                    {application.budget
-                      ? `$${application.budget.toLocaleString()}`
-                      : "N/A"}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium">Scope</p>
-                  <p className="text-sm text-muted-foreground">
-                    {application.scope || "N/A"}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium">Start Date</p>
-                  <p className="text-sm text-muted-foreground">
-                    {application.startDate || "N/A"}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium">End Date</p>
-                  <p className="text-sm text-muted-foreground">
-                    {application.endDate || "N/A"}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium">Current Step</p>
-                  <Badge variant="secondary" className="text-sm">
-                    Step {application.currentStep}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="documents" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("application.uploadedDocuments")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {application.documentsSubmitted &&
-                application.documentsSubmitted.length > 0 ? (
-                  application.documentsSubmitted.map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div className="flex items-center gap-4 flex-1">
-                        <FileText className="h-8 w-8 text-muted-foreground" />
-                        <div className="flex-1">
-                          <p className="font-medium">{doc.documentType.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {doc.path}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          <Download className="h-4 w-4 mr-2" />
-                          Download
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-12">
-                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-muted-foreground">
-                      No documents submitted
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          <div className="pt-4 border-t">
+            <p className="text-sm font-medium mb-2">Motivation</p>
+            <p className="text-sm text-muted-foreground">
+              {application.motivation}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       <SuccessModal
         open={showSuccessModal}
