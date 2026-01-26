@@ -93,7 +93,7 @@ export default function NewProject() {
   const steps = [
     { key: "basics", label: t("project.basics") },
     { key: "budget", label: t("project.budget") },
-    { key: "documents", label: t("project.documents") },
+    // { key: "documents", label: t("project.documents") }, // TODO: Uncomment when backend implements document upload
     { key: "review", label: t("project.review") },
   ];
 
@@ -173,10 +173,6 @@ export default function NewProject() {
   };
 
   const handleSubmit = async (values: ProjectFormValues) => {
-    if (currentStep < steps.length - 1) {
-      return;
-    }
-
     try {
       await projectsApi.create({
         name: values.name,
@@ -406,7 +402,7 @@ export default function NewProject() {
                 </div>
               )}
 
-              {currentStep === 2 && (
+              {/* {currentStep === 2 && (
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
                     {t("project.documentRequirements")}
@@ -511,9 +507,9 @@ export default function NewProject() {
                     </div>
                   )}
                 </div>
-              )}
+              )} */}
 
-              {currentStep === 3 && (
+              {currentStep === 2 && (
                 <div className="space-y-4">
                   <div className="bg-muted/50 rounded-lg p-6 space-y-4">
                     <h3 className="font-semibold text-lg">Project Summary</h3>
